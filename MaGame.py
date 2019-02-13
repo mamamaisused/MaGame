@@ -40,15 +40,12 @@ def initialize():
     #变量初始化放这里
     global FONT,CLOCK,DIR
     global SCREEN_WIDTH,SCREEN_HEIGHT
-    global Role1
     fontsize = 40
     SCREEN_WIDTH = mygame.Width
     SCREEN_HEIGHT = mygame.Height
     DIR = os.path.split(os.path.abspath(__file__))[0]
     FONT = pygame.font.Font(None,fontsize)
     CLOCK = pygame.time.Clock()#设置帧率
-    Role1 = ImgRole("s2.png")
-    Role1.SetScale(0.1)
     #end of initialize
 
 def ClearScreen():
@@ -57,75 +54,70 @@ def ClearScreen():
     SCREEN.fill(mygame.BackColor)
     #pygame.display.update()
     #end of ClearSCreen
-angle = 0
+
 def FrameTask():
     #每帧的任务
-    global CLOCK,Role1,role1_x,role1_y,speed,angle
-    angle+=1
+    global CLOCK
     #Frame = 40 fps   
     CLOCK.tick(40)
-    ClearScreen()    
-    #Role1.Show((role1_x,role1_y))
-    Role1.Rotate(angle,(100,100))
-    #mygame.GamePrint("Happy New Year!",(role1_x-50,role1_y-50))
-    if role1_x>500 :
-        speed = -speed
-    if role1_x<50:
-        speed = -speed
+    #when you need to clear the screen
+    #ClearScreen()    
     #end of FrameTask
 
-#基于图像的角色，后续扩展基于Sprite的角色
-class ImgRole():
+#Based on Sprite
+class Actor(pygame.sprite.Sprite):
     costumes = []
     def __init__(self,imgpath,position = (0,0)):
-        global DIR        
+        global DIR
+        pygame.sprite.Sprite.__init__(self)        
         imgpath = os.path.join(DIR, imgpath)
         print(imgpath)
-        #costume是用于初始化的，具体使用的时候用costumes list中的图像
-        self.costume = pygame.image.load(imgpath).convert_alpha()
-        self.costumes = [self.costume]
+        #image是用于初始化的，pygame的Sprite必须有一个image对象，用于保存其需要展示的图像
+        self.image = pygame.image.load(imgpath).convert_alpha()
+        self.images = [self.image]
+        #pygame的Sprite必须有一个rect对象，用于设定图像显示的区域
+        self.rect = self.image.get_rect()
         #角色尺寸
-        self.Width,self.Height = self.costume.get_size()
-        self.Center_x = position[0]
-        self.Center_y = position[1]
+        self.Width,self.Height = self.image.get_size()
+        self.Loc_x = position[0]
+        self.Loc_y = position[1]
         self.ImgIndex = 0
-    def AppendCostume(self,imgpath):
+    def AppendImage(self,imgpath):
         global DIR
         imgpath = os.path.join(DIR, imgpath)
         surf = pygame.image.load(imgpath).convert_alpha()
-        self.costumes.append(surf)
+        self.images.append(surf)
+    #Sprite功能很强大，可以不用去定义Show函数，采用下面的方法实现显示会更便捷：
+    #先定义一个Group，<group name> = pygame.sprite.Group()
+    #然后将先前声明的Sprite实例加入到这个Group中，<group name>.add(<actor name>)
+    #最后用<group name>.draw(screen)方法绘制角色，而绘制角色的大小和位置则取决于rect属性
+    '''
     def Show(self,_position = None):
         global SCREEN
         global SCREEN_WIDTH,SCREEN_HEIGHT
         if _position is None:
-            _position = self.Center_x,self.Center_y
-        else:
-            self.Center_x = _position[0] + self.Width//2
-            self.Center_y = _position[1] + self.Height//2
-        SCREEN.blit(self.costumes[self.ImgIndex],_position)
-        #pygame.display.update()
+            _position = self.Loc_x,self.Loc_y
+        SCREEN.blit(self.images[self.ImgIndex],_position)
+    '''
     def SetScale(self,_scale):
-        for i in range(len(self.costumes)):
+        for i in range(len(self.images)):
             _width = int(_scale*self.Width)
             _height = int(_scale*self.Height)
-            self.costumes[i] = pygame.transform.smoothscale(self.costumes[i],(_width,_height))
-    def Rotate(self,_angle,_position = None):
-        global SCREEN
-        if _position is None:
-            _position = self.Center_x,self.Center_y
-        newsurf = pygame.transform.rotate(self.costumes[self.ImgIndex],_angle)
-        SCREEN.blit(newsurf,_position)
-
-role1_x = 0
-role1_y = 0
-speed = 1
+            self.images[i] = pygame.transform.smoothscale(self.images[i],(_width,_height))
+        self.image = self.images[0]
 
 def main():
-    global SCREEN,Role1,speed,role1_x
+    global SCREEN
     initialize()
-    mygame.GamePrint("Hello, World!",(100,100))
-    while True:  
-        #role1_x+=speed
+    testgroup = pygame.sprite.Group()
+    role1 = Actor("s.png")    
+    testgroup.add(role1)
+    role1.SetScale(0.4)
+    role1.rect.move_ip(100,100)
+    print(role1.rect)    
+    testgroup.draw(SCREEN)
+    #role1.Show()
+    while True:          
         pygame.display.update()      
         FrameTask()
         for event in pygame.event.get():
