@@ -57,11 +57,14 @@ def ClearScreen():
 
 def FrameTask():
     #每帧的任务
-    global CLOCK
+    global CLOCK,SCREEN
+    global role1,testgroup
     #Frame = 40 fps   
     CLOCK.tick(40)
+    role1.rect.move_ip(1,0)
     #when you need to clear the screen
-    #ClearScreen()    
+    ClearScreen() 
+    testgroup.draw(SCREEN)  
     #end of FrameTask
 
 #Based on Sprite
@@ -106,16 +109,19 @@ class Actor(pygame.sprite.Sprite):
             self.images[i] = pygame.transform.smoothscale(self.images[i],(_width,_height))
         self.image = self.images[0]
 
+global role1,testgroup
+
 def main():
     global SCREEN
-    initialize()
+    global role1,testgroup
+    initialize() 
     testgroup = pygame.sprite.Group()
-    role1 = Actor("s.png")    
-    testgroup.add(role1)
-    role1.SetScale(0.4)
-    role1.rect.move_ip(100,100)
+    role1 = Actor("s.png") 
+    rect1 = pygame.Rect(0,0,100,100)
+    role1.image = role1.image.subsurface(rect1)   
+    testgroup.add(role1)   
     print(role1.rect)    
-    testgroup.draw(SCREEN)
+    testgroup.draw(SCREEN) 
     #role1.Show()
     while True:          
         pygame.display.update()      
