@@ -3,6 +3,7 @@ import pygame
 from pygame.locals import *
 import MaColor
 import os.path
+import numpy
 
 global SCREEN
 global FONT
